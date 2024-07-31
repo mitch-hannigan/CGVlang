@@ -7,7 +7,7 @@ std::string readFile(const std::string &filePath)
     std::ifstream file(filePath, std::ios::binary);
     if (!file)
     {
-        throw std::runtime_error("Não foi possível abrir o arquivo.");
+        throw std::runtime_error("File not found!");
     }
 
     std::ostringstream oss;

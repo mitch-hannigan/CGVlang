@@ -169,9 +169,29 @@ inline bool lex_is_marker(const std::string &source, size_t length, char c, toke
         return false;
     }
 }
+inline bool lex_is_byte_char(const std::string &source, size_t length, char c, token &tok, size_t &i, size_t &col)
+{
+    if (c == '\'')
+    {
+        if (i + 2 < length && source[i + 2] == '\'')
+        {
+            tok.tclass = token_val_char;
+            tok.text = (std::string("'") + source[i+1])+"'";
+            i+=2;
+            col+=2;
+        }
+        else
+        {
+            tok.tclass = token_error;
+            tok.text = "' is not followed by a character and another  ', this is a problem.";
+        }
+        return true;
+    }
+    return false;
+}
 inline void lex_is_single_char(const std::string &source, size_t length, char c, token &tok, size_t &i, size_t &col)
 {
-    if (!(lex_is_arithmetic_operator(source, length, c, tok, i, col) || lex_is_comparison_operator(source, length, c, tok, i, col) || lex_is_marker(source, length, c, tok, i, col)))
+    if (!(lex_is_arithmetic_operator(source, length, c, tok, i, col) || lex_is_comparison_operator(source, length, c, tok, i, col) || lex_is_marker(source, length, c, tok, i, col)||lex_is_byte_char(source, length, c, tok, i, col)))
     {
         tok.tclass = token_error;
         tok.text = std::string("Unknown character ") + c + std::string(".");

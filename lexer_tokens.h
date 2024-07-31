@@ -37,6 +37,7 @@ enum token_class
     token_doif = token_keyword | 0x20000000,
     token_maybe_not = token_keyword | 0x10000000,
     token_do_it_again = token_keyword | 0x08000000,
+    token_do_it_again_until = token_keyword | 0x04000000,
     token_type_byte = token_type | 0x80000000,
     token_type_int = token_type | 0x40000000,
     token_type_real = token_type | 0x20000000,

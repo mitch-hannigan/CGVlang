@@ -145,6 +145,10 @@ inline bool lex_is_marker(const std::string &source, size_t length, char c, toke
 {
     switch (c)
     {
+    case '!':
+        tok.tclass = token_not;
+        tok.text = "!";
+        return true;
     case '(':
         tok.tclass = token_left_paren;
         tok.text = "(";
@@ -176,9 +180,9 @@ inline bool lex_is_byte_char(const std::string &source, size_t length, char c, t
         if (i + 2 < length && source[i + 2] == '\'')
         {
             tok.tclass = token_val_char;
-            tok.text = (std::string("'") + source[i+1])+"'";
-            i+=2;
-            col+=2;
+            tok.text = (std::string("'") + source[i + 1]) + "'";
+            i += 2;
+            col += 2;
         }
         else
         {
@@ -191,7 +195,7 @@ inline bool lex_is_byte_char(const std::string &source, size_t length, char c, t
 }
 inline void lex_is_single_char(const std::string &source, size_t length, char c, token &tok, size_t &i, size_t &col)
 {
-    if (!(lex_is_arithmetic_operator(source, length, c, tok, i, col) || lex_is_comparison_operator(source, length, c, tok, i, col) || lex_is_marker(source, length, c, tok, i, col)||lex_is_byte_char(source, length, c, tok, i, col)))
+    if (!(lex_is_arithmetic_operator(source, length, c, tok, i, col) || lex_is_comparison_operator(source, length, c, tok, i, col) || lex_is_marker(source, length, c, tok, i, col) || lex_is_byte_char(source, length, c, tok, i, col)))
     {
         tok.tclass = token_error;
         tok.text = std::string("Unknown character ") + c + std::string(".");

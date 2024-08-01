@@ -1,6 +1,6 @@
 int a
 real b=get(8)
 =a+3.0
-doif(b < 10.0) 
+doif(b < 10.) 
 {
     put('M') put('e') put('n') put('o') put('r')do_it_again_until(e, 0, 2, 1) { put('!') } }maybe_not { put('N') put('a') put('o')int f f = 0 do_it_again(!(f == 2)) {put('!') } }

@@ -9,7 +9,4 @@ std::unordered_map<std::string, token_class> keywords = {
     {"byte", token_type_byte},
     {"int", token_type_int},
     {"real", token_type_real},
-    {"and", token_and},
-    {"or", token_or},
-    {"not", token_not}
 };

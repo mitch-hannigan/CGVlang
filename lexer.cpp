@@ -149,6 +149,30 @@ inline bool lex_is_marker(const std::string &source, size_t length, char c, toke
         tok.tclass = token_not;
         tok.text = "!";
         return true;
+    case '&':
+        if (i + 1 < length && source[i + 1] == '&')
+        {
+            tok.tclass = token_and;
+            tok.text = "&&";
+            ++i;
+            ++col;
+        } else {
+            tok.tclass = token_error;
+            tok.text = "Expected another '&' after '&' token";
+        }
+        return true;    
+    case '|':
+        if (i + 1 < length && source[i + 1] == '|')
+        {
+            tok.tclass = token_or;
+            tok.text = "||";
+            ++i;
+            ++col;
+        } else {
+            tok.tclass = token_error;
+            tok.text = "Expected another '|' after '|' token";
+        }
+        return true;
     case '(':
         tok.tclass = token_left_paren;
         tok.text = "(";

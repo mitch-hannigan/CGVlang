@@ -1,5 +1,4 @@
 #include "lexer.h"
-#include <list>
 #include <string>
 #include <cctype>
 #include <iostream>
@@ -156,11 +155,13 @@ inline bool lex_is_marker(const std::string &source, size_t length, char c, toke
             tok.text = "&&";
             ++i;
             ++col;
-        } else {
+        }
+        else
+        {
             tok.tclass = token_error;
             tok.text = "Expected another '&' after '&' token";
         }
-        return true;    
+        return true;
     case '|':
         if (i + 1 < length && source[i + 1] == '|')
         {
@@ -168,7 +169,9 @@ inline bool lex_is_marker(const std::string &source, size_t length, char c, toke
             tok.text = "||";
             ++i;
             ++col;
-        } else {
+        }
+        else
+        {
             tok.tclass = token_error;
             tok.text = "Expected another '|' after '|' token";
         }
@@ -225,12 +228,13 @@ inline void lex_is_single_char(const std::string &source, size_t length, char c,
         tok.text = std::string("Unknown character ") + c + std::string(".");
     }
 }
-std::list<token> lex_analyze(const std::string &source, bool &result)
+std::vector<token> lex_analyze(const std::string &source, bool &result)
 {
-    std::list<token> tokens;
+    std::vector<token> tokens;
     size_t length = source.length();
     size_t line = 1, col = 1;
     result = true;
+    token tok;
     for (size_t i = 0; i < length; ++i, ++col)
     {
         char c = source[i];
@@ -245,7 +249,6 @@ std::list<token> lex_analyze(const std::string &source, bool &result)
             lex_process_comment(source, i, length);
             continue;
         }
-        token tok;
         tok.line = line;
         tok.col = col;
         if (std::isdigit(c))
@@ -266,5 +269,10 @@ std::list<token> lex_analyze(const std::string &source, bool &result)
         result = result && tok.tclass != token_error;
         tokens.push_back(tok);
     }
+    tok.line=line;
+    tok.col=col;
+    tok.tclass=token_eof;
+    tok.text="";
+    tokens.push_back(tok);
     return tokens;
 }

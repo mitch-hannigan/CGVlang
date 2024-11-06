@@ -12,6 +12,7 @@ enum token_class
     token_keyword = 0x20,
     token_type = 0x40,
     token_val = 0x80,
+    token_non_terminal = 0x00008000,
     // composed tokens
     token_left_paren = token_marker | 0x80000000,
     token_right_paren = token_marker | 0x40000000,
@@ -45,7 +46,40 @@ enum token_class
     token_val_char = token_val_byte | 0x10000000,// 0x80000000to0x20000000 is already in use in this case.
     token_val_int = token_type_int | token_val,
     token_val_real = token_type_real | token_val,
-    token_error = 0xffffffff
+    token_error = 0xffffffff,
+    // non terminals
+    token_non_s = token_non_terminal+1,
+    token_non_expr,
+    token_non_expr_lo_or,
+    token_non_expr_lo_or_rest,
+    token_non_expr_lo_and,
+    token_non_expr_lo_and_rest,
+    token_non_expr_comp_ge,
+    token_non_expr_comp_ge_rest,
+    token_non_expr_comp_le,
+    token_non_expr_comp_le_rest,
+    token_non_expr_comp_g,
+    token_non_expr_comp_g_rest,
+    token_non_expr_comp_l,
+    token_non_expr_comp_l_rest,
+    token_non_expr_comp_e,
+    token_non_expr_comp_e_rest,
+    token_non_expr_arit_as,
+    token_non_expr_arit_as_rest,
+    token_non_expr_arit_md,
+    token_non_expr_arit_md_rest,
+    token_non_expr_arit_exp,
+    token_non_expr_arit_exp_rest,
+    token_non_expr_not,
+    token_non_expr_final,
+    token_non_typedecl,
+    token_non_typedecl_attrib,
+    token_non_getfunc,
+    token_non_putfunc,
+    token_non_doif,
+    token_non_maybe_not,
+    token_non_do_it_again,
+    token_non_do_it_again_until
 };
 typedef struct
 {

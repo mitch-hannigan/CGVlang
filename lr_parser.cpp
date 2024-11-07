@@ -873,7 +873,7 @@ std::unordered_map<token_class, std::unordered_map<token_class, std::list<token_
         {token_not, {}},
         {token_val, {}},
         {token_id, {}},
-        {token_left_paren, {token_left_paren, token_non_expr, token_right_paren}},
+        {token_left_paren, {token_left_paren, token_id, token_right_paren}},
         {token_right_paren, {}},
         {token_right_brace, {}},
         {token_eof, {}}

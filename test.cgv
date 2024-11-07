@@ -1,22 +1,19 @@
 int a
-real b=get(8)
-=a+3.0
-doif(b && || 10.0) 
+real b=1.2
+int c=a+3.0
+doif(c<5)
 {
-    put('M') put('e') put('n') put('o') put('r')
-    do_it_again_until(e, 0, 2, 1) 
-    { 
-        put('!') 
-    } 
-} maybe_not 
-{ 
-    put('N') 
-    put('a') 
-    put('o')
-    int f 
-    f = 0 
-    do_it_again(!(f == 2)) 
-    {
-        put('!') 
-    } 
+    put(123)
+}
+maybe_not
+{
+    put(1b)
+}
+do_it_again(1+2)
+{
+    get(4)
+}
+do_it_again_until(c, 0, 10, 1)
+{
+    put(10b)
 }

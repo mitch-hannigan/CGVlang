@@ -237,6 +237,7 @@ std::vector<token> lex_analyze(const std::string &source, bool &result)
     token tok;
     for (size_t i = 0; i < length; ++i, ++col)
     {
+        tok.text.clear();
         char c = source[i];
         if (std::isspace(c)) // witespace test
         {

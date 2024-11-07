@@ -41,7 +41,7 @@ TYPEDECL -> id TYPEDECL_ATTRIB
 
 TYPEDECL_ATTRIB -> = EXPR | ϵ
 
-GETFUNC -> ( EXPR )
+GETFUNC -> ( id )
 
 PUTFUNC -> ( EXPR )
 

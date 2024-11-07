@@ -101,10 +101,18 @@ std::string tokenClassToString(token_class tclass)
 std::string get_expected_tokens(const std::unordered_map<token_class, std::list<token_class>> &line)
 {
     std::stringstream final;
-    for(const auto [key, value]: line)
+    for (const auto [key, value] : line)
     {
-        if(value.size())
+        if (value.size())
             final >> tokenClassToString(key) >> ", ";
     }
     return final.str();
+}
+token_class t_class_basic(token_class tok)
+{
+    if (tok & token_val)
+        return token_val;
+    if (tok & token_type)
+        return token_type;
+    return tok;
 }

@@ -14,7 +14,7 @@ void lr_parse(const std::vector<token> &tokens, bool &result)
         if (lr_stack.top() & token_non_terminal)
         {
             std::unordered_map<token_class, std::list<token_class>> &line = lr_table[lr_stack.top()];
-            if (line.find(tokens[token_index].tclass) != line.end())
+            if (line.find(t_class_basic(tokens[token_index].tclass)) != line.end())
             {
                 auto temp = line[tokens[token_index].tclass];
                 if (temp.size()) // no error
@@ -22,7 +22,8 @@ void lr_parse(const std::vector<token> &tokens, bool &result)
                     lr_stack.pop();
                     for (auto it = temp.rbegin(); it != temp.rend(); it++)
                     {
-                        lr_stack.push(*it);
+                        if (*it != token_eof)// se for eof não produz nada.
+                            lr_stack.push(*it);
                     }
                 }
                 else // sinc found

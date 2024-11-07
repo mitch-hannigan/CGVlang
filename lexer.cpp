@@ -5,7 +5,7 @@
 inline void lex_process_newline(size_t &line, size_t &col)
 {
     line++;
-    col = 1; // not 0 based
+    col = 0; // loop increments right after.
 }
 inline void lex_process_comment(const std::string &source, size_t &i, size_t &length)
 {

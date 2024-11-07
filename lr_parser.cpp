@@ -29,12 +29,14 @@ void lr_parse(const std::vector<token> &tokens, bool &result)
                 else // sinc found
                 {
                     std::cout << "error: found " << tokenClassToString(tokens[token_index].tclass) << "expected: " << get_expected_tokens(line) << ". on line " << tokens[token_index].line << " on col " << tokens[token_index].col << std::endl;
+                    lr_stack.pop();
                     result = false;
                 }
             }
             else // error, empty table for this terminal
             {
                 std::cout << "error: found " << tokenClassToString(tokens[token_index].tclass) << "expected: " << get_expected_tokens(line) << ". on line " << tokens[token_index].line << " on col " << tokens[token_index].col << std::endl;
+                token_index++;
                 result = false;
             }
         }

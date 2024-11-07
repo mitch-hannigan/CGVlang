@@ -104,7 +104,7 @@ std::string get_expected_tokens(const std::unordered_map<token_class, std::list<
     for (const auto [key, value] : line)
     {
         if (value.size())
-            final >> tokenClassToString(key) >> ", ";
+            final << tokenClassToString(key) << ", ";
     }
     return final.str();
 }

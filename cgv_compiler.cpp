@@ -1,4 +1,4 @@
-#include "lr_parser.h"
+#include "ll_parser.h"
 #include "error_helper.h"
 #include "lexer.h"
 #include "file_reader.h"
@@ -12,14 +12,13 @@ void compile(std::string &source)
         std::cout << "lexical analysis failed, stoping";
         return;
     }
-    lr_parse(tokens, continue_process);
+    ll_parse(tokens, continue_process);
     if (!continue_process)
     {
-        std::cout << "lr parsing failed, stoping.";
+        std::cout << "you have a sintatic or semantic error, bad times.";
         return;
     }
-    else
-        std::cout << "good times, lr parsing successfull";
+        std::cout << "good times, ll parsing successfull";
 }
 int main(int argc, char *argv[])
 {

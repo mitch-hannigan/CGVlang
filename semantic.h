@@ -19,3 +19,4 @@ typedef struct
     std::unordered_map<int, std::unordered_map<std::string, symbol_entry>> symbol_table; // int key is scope, string key is name.
 } semantic_struct;
 typedef bool (*semantic_rule)(semantic_struct &, const token &input, const token &stack_top);
+bool set_type(semantic_struct &state, const token &input, const token &stack_top);

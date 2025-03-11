@@ -95,12 +95,12 @@ std::string tokenClassToString(token_class tclass)
         return "unknown";
     }
 }
-std::string get_expected_tokens(const std::unordered_map<token_class, std::list<token_class>> &line)
+std::string get_expected_tokens(const std::unordered_map<token_class, std::pair<std::list<token_class>, semantic_rule>> &line)
 {
     std::stringstream final;
     for (const auto [key, value] : line)
     {
-        if (value.size())
+        if (value.first.size())
             final << tokenClassToString(key) << ", ";
     }
     return final.str();

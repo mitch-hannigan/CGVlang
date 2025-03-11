@@ -48,7 +48,9 @@ inline void lex_process_number(const std::string &source, size_t length, token &
         i++;
         col++;
     }
-    --i, --col; // backtrack to handle the last character
+    if (tok.tclass == token_val_byte)
+        tok.text.pop_back();// remove the b from the token text
+        --i, --col; // backtrack to handle the last character
 }
 inline void lex_check_keyword(token &tok)
 {
@@ -58,7 +60,7 @@ inline void lex_check_keyword(token &tok)
     else
     {
         tok.tclass = token_id;
-        tok.text = std::string("v") + tok.text;// for code generation.
+        tok.text = std::string("v") + tok.text; // for code generation.
     }
 }
 inline void lex_process_id(const std::string &source, size_t length, token &tok, size_t &i, size_t &col)
@@ -210,7 +212,7 @@ inline bool lex_is_byte_char(const std::string &source, size_t length, char c, t
         if (i + 2 < length && source[i + 2] == '\'')
         {
             tok.tclass = token_val_char;
-            tok.text = (std::string("'") + source[i + 1]) + "'";
+            tok.text = source[i + 1];
             i += 2;
             col += 2;
         }

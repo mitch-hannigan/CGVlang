@@ -56,7 +56,10 @@ inline void lex_check_keyword(token &tok)
     if (it != keywords.end())
         tok.tclass = it->second;
     else
+    {
         tok.tclass = token_id;
+        tok.text = std::string("v") + tok.text;// for code generation.
+    }
 }
 inline void lex_process_id(const std::string &source, size_t length, token &tok, size_t &i, size_t &col)
 {
@@ -270,10 +273,10 @@ std::vector<token> lex_analyze(const std::string &source, bool &result)
         result = result && tok.tclass != token_error;
         tokens.push_back(tok);
     }
-    tok.line=line;
-    tok.col=col;
-    tok.tclass=token_eof;
-    tok.text="";
+    tok.line = line;
+    tok.col = col;
+    tok.tclass = token_eof;
+    tok.text = "";
     tokens.push_back(tok);
     return tokens;
 }

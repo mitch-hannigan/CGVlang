@@ -3,12 +3,13 @@
 #include "semantic.h"
 #include <stack>
 #include <iostream>
-void ll_parse(const std::vector<token> &tokens, bool &result)
+std::string ll_parse(const std::vector<token> &tokens, bool &result)
 {
     result = true;
     std::stack<token_class> ll_stack;
     ll_stack.push(token_eof);
     ll_stack.push(token_non_s);
+    semantic_struct state;
     int token_index = 0;
     while (token_index < tokens.size() && ll_stack.size())
     {
@@ -20,6 +21,15 @@ void ll_parse(const std::vector<token> &tokens, bool &result)
                 auto temp = line[t_class_basic(tokens[token_index].tclass)];
                 if (temp.first.size()) // no error
                 {
+                    if (temp.second) // we have a semantic rule
+                    {
+                        if (!(temp.second(state, tokens, token_index, ll_stack.top()))) // we have an error
+                        {
+                            std::cout << "semantic error: " << state.error << std::endl
+                                      << "on line " << tokens[token_index].line << " col " << tokens[token_index].col;
+                            result = false;
+                        }
+                    }
                     ll_stack.pop();
                     for (auto it = temp.first.rbegin(); it != temp.first.rend(); it++)
                     {
@@ -56,6 +66,7 @@ void ll_parse(const std::vector<token> &tokens, bool &result)
             }
         }
     }
+    return state.code;
 }
 
 std::unordered_map<token_class, std::unordered_map<token_class, std::pair<std::list<token_class>, semantic_rule>>> ll_table =
@@ -65,7 +76,7 @@ std::unordered_map<token_class, std::unordered_map<token_class, std::pair<std::l
             // begin first line pair
             token_non_s,
             {// begin first line content
-             {token_type, {{token_type, token_non_typedecl, token_non_s}, nullptr}},
+             {token_type, {{token_type, token_non_typedecl, token_non_s}, set_type}},
              {token_get, {{token_get, token_non_getfunc, token_non_s}, nullptr}},
              {token_put, {{token_put, token_non_putfunc, token_non_s}, nullptr}},
              {token_doif, {{token_doif, token_non_doif, token_non_s}, nullptr}},
@@ -75,7 +86,7 @@ std::unordered_map<token_class, std::unordered_map<token_class, std::pair<std::l
              {token_val, {{token_non_expr, token_non_s}, nullptr}},
              {token_id, {{token_non_expr, token_non_s}, nullptr}},
              {token_left_paren, {{token_non_expr, token_non_s}, nullptr}},
-             {token_right_brace, {{token_eof}, nullptr}},
+             {token_right_brace, {{token_eof}, end_scope}},
              {token_eof, {{token_eof}, nullptr}}} // end first line content
         },                                        // end first line pair
         {
@@ -835,7 +846,7 @@ std::unordered_map<token_class, std::unordered_map<token_class, std::pair<std::l
              {token_do_it_again_until, {{}, nullptr}},
              {token_not, {{}, nullptr}},
              {token_val, {{}, nullptr}},
-             {token_id, {{token_id, token_non_typedecl_attrib}, nullptr}},
+             {token_id, {{token_id, token_non_typedecl_attrib}, add_symbol}},
              {token_left_paren, {{}, nullptr}},
              {token_right_paren, {{}, nullptr}},
              {token_right_brace, {{}, nullptr}},
@@ -874,7 +885,7 @@ std::unordered_map<token_class, std::unordered_map<token_class, std::pair<std::l
              {token_not, {{}, nullptr}},
              {token_val, {{}, nullptr}},
              {token_id, {{}, nullptr}},
-             {token_left_paren, {{token_left_paren, token_id, token_right_paren}, nullptr}},
+             {token_left_paren, {{token_left_paren, token_id, token_right_paren}, get_rule}},
              {token_right_paren, {{}, nullptr}},
              {token_right_brace, {{}, nullptr}},
              {token_eof, {{}, nullptr}}} // end 28th line content

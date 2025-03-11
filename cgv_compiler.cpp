@@ -12,13 +12,13 @@ void compile(std::string &source)
         std::cout << "lexical analysis failed, stoping";
         return;
     }
-    ll_parse(tokens, continue_process);
+    auto str = ll_parse(tokens, continue_process);
     if (!continue_process)
     {
         std::cout << "you have a sintatic or semantic error, bad times.";
         return;
     }
-        std::cout << "good times, ll parsing successfull";
+    std::cout << str << "\ngood times, ll parsing successfull";
 }
 int main(int argc, char *argv[])
 {

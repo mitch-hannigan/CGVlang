@@ -113,3 +113,11 @@ token_class t_class_basic(token_class tok)
         return token_type;
     return tok;
 }
+std::string get_tac_type(token_class tok)
+{
+    std::string final;
+    if((tok & token_type_byte) == token_type_byte) final=" u8 ";
+    else if((tok & token_type_int) == token_type_int) final=" i64 ";
+    else if((tok & token_type_real) == token_type_real) final=" f64 ";
+    return final;
+}

@@ -1,4 +1,8 @@
-byte a = 1+2
-byte b=a
-put(b)
-put(10b)
+doif(1<2)
+{
+    1+2*3+4
+}
+maybe_not
+{
+    4+3*2+1
+}

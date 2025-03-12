@@ -6,6 +6,7 @@
 #include "lexer_tokens.h"
 enum future_action_trigers
 {
+    begin_scope_trigger,
     end_of_scope_trigger,
     expr_evaluated_trigger,
     on_demand_trigger
@@ -28,6 +29,7 @@ struct future_action
 {
     std::vector<token> data;          // can be used to store information for the future function. (if function is null the code will write what's present on this vector, the text of the tokens, from first to last.)
     action_function action = nullptr; // by default this is a future code writer
+    future_action_trigers trigger;// this trigger is used for the writer function only.
 };
 struct semantic_struct
 {
@@ -64,3 +66,9 @@ bool demand_action_rule(semantic_struct &state, const std::vector<token> &tokens
 bool declare_tac_variable(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top, std::vector<token> &data);
 bool generat_tac_put(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top, std::vector<token> &data);
 bool put_rule(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top);
+bool generat_tac_do_it_again(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top, std::vector<token> &data);
+bool do_it_again_rule(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top);
+bool generat_tac_do_if(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top, std::vector<token> &data);
+bool do_if_rule(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top);
+bool generat_tac_maybe_not(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top, std::vector<token> &data);
+bool maybe_not_rule(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top);

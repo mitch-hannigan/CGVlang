@@ -202,8 +202,12 @@ bool expr_move_up_rule(semantic_struct &state, const std::vector<token> &tokens,
 }
 bool begin_scope(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top)
 {
-    state.scope++;
-    return true;
+    if (activate_action(state, tokens, token_index, stack_top, begin_scope_trigger)) // action run ok.
+    {
+        state.scope++;
+        return true;
+    }
+    return false;
 }
 bool end_scope(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top)
 {
@@ -249,8 +253,13 @@ bool activate_action(semantic_struct &state, const std::vector<token> &tokens, i
         future_action action = state.future.top();
         state.future.pop();
         if (!action.action) // code writer
-            for (auto &tok : action.data)
-                state.code += tok.text + " ";
+        {
+            if (trigger == action.trigger) // we can write
+                for (auto &tok : action.data)
+                    state.code += tok.text + " ";
+            else // let's restore the action, we didn't run it.
+                state.future.push(action);
+        }
         else // action is a function
         {
             return action.action(state, tokens, token_index, stack_top, action.data);
@@ -302,4 +311,67 @@ bool generat_tac_put(semantic_struct &state, const std::vector<token> &tokens, i
     state.code += "call write_" +
                   get_tac_type(state.last_solved_expr.type) + std::string("(") + get_tac_text_form(make_token_from_entry(state.last_solved_expr)) + std::string(") ");
     return true;
+}
+bool do_it_again_rule(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top)
+{
+    begin_scope(state, tokens, token_index, stack_top);
+    token text;
+    std::string label_prefix = get_label_name_prefix(state);
+    state.code += label_prefix + "loopstart: ";
+    future_action action;
+    text.text = std::string("goto ") + label_prefix + "loopstart " + label_prefix + "loopend: ";
+    action.trigger = end_of_scope_trigger;
+    action.data.push_back(text); // end of loop code.
+    state.future.push(action);
+    action.action = generat_tac_do_it_again;
+    action.data[0].text = label_prefix; // used for futury code.
+    state.future.push(action);
+    return true;
+}
+bool generat_tac_do_it_again(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top, std::vector<token> &data)
+{
+    state.code += std::string("if (bool) ") + get_tac_text_form(make_token_from_entry(state.last_solved_expr)) + std::string("goto ") + data[0].text + "loopcode " + "goto " + data[0].text + "loopend " + data[0].text + "loopcode: ";
+    return true;
+}
+bool do_if_rule(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top)
+{
+    token text;
+    std::string label_prefix = get_label_name_prefix(state);
+    future_action action;
+    action.action = generat_tac_maybe_not;
+    action.data.push_back(text);
+    action.data[0].text = label_prefix; // used for futury code.
+    state.future.push(action);
+    action.action = nullptr;
+    text.text = std::string("goto ") + label_prefix + "do_if_end " + label_prefix + "maybe_not: ";
+    action.trigger = end_of_scope_trigger;
+    action.data[0] = text;
+    state.future.push(action);
+    action.action = generat_tac_do_if;
+    action.data[0].text = label_prefix; // used for futury code.
+    state.future.push(action);
+    return true;
+}
+bool generat_tac_do_if(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top, std::vector<token> &data)
+{
+    state.code += std::string("if (bool) ") + get_tac_text_form(make_token_from_entry(state.last_solved_expr)) + std::string("goto ") + data[0].text + "do_if " + "goto " + data[0].text + "maybe_not " + data[0].text + "do_if: ";
+    return true;
+}
+bool generat_tac_maybe_not(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top, std::vector<token> &data)
+{
+    if (state.trigger == on_demand_trigger)
+        state.code += data[0].text + "do_if_end: ";
+    else
+    {
+        future_action action;
+        action.trigger = end_of_scope_trigger;
+        action.data = data;
+        action.data[0].text += "do_if_end: ";
+        state.future.push(action);
+    }
+    return true;
+}
+bool maybe_not_rule(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top)
+{
+    return begin_scope(state, tokens, token_index, stack_top);
 }

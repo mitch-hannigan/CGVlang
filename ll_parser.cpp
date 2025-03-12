@@ -871,7 +871,7 @@ std::unordered_map<token_class, std::unordered_map<token_class, std::pair<std::l
              {token_assign, {{token_assign, token_non_expr}, nullptr}},
              {token_right_brace, {{token_eof}, demand_action_rule}},
              {token_eof, {{token_eof}, demand_action_rule}}} // end 27th line content
-        },                                        // end 27th line pair
+        },                                                   // end 27th line pair
         {
             // begin 28th line pair
             token_non_getfunc,
@@ -921,7 +921,7 @@ std::unordered_map<token_class, std::unordered_map<token_class, std::pair<std::l
              {token_not, {{}, nullptr}},
              {token_val, {{}, nullptr}},
              {token_id, {{}, nullptr}},
-             {token_left_paren, {{token_left_paren, token_non_expr, token_right_paren, token_left_brace, token_non_s, token_right_brace, token_non_maybe_not}, nullptr}},
+             {token_left_paren, {{token_left_paren, token_non_expr, token_right_paren, token_left_brace, token_non_s, token_right_brace, token_non_maybe_not}, do_if_rule}},
              {token_right_paren, {{}, nullptr}},
              {token_right_brace, {{}, nullptr}},
              {token_eof, {{}, nullptr}}} // end 30th line content
@@ -930,21 +930,21 @@ std::unordered_map<token_class, std::unordered_map<token_class, std::pair<std::l
             // begin 31st line pair
             token_non_maybe_not,
             {// begin 31st line content
-             {token_type, {{token_eof}, nullptr}},
-             {token_get, {{token_eof}, nullptr}},
-             {token_put, {{token_eof}, nullptr}},
-             {token_doif, {{token_eof}, nullptr}},
-             {token_do_it_again, {{token_eof}, nullptr}},
-             {token_do_it_again_until, {{token_eof}, nullptr}},
-             {token_maybe_not, {{token_maybe_not, token_left_brace, token_non_s, token_right_brace}, nullptr}},
-             {token_not, {{token_eof}, nullptr}},
-             {token_val, {{token_eof}, nullptr}},
-             {token_id, {{token_eof}, nullptr}},
-             {token_left_paren, {{token_eof}, nullptr}},
-             {token_right_paren, {{token_eof}, nullptr}},
-             {token_right_brace, {{token_eof}, nullptr}},
-             {token_eof, {{token_eof}, nullptr}}} // end 31st line content
-        },                                        // end 31stth line pair
+             {token_type, {{token_eof}, demand_action_rule}},
+             {token_get, {{token_eof}, demand_action_rule}},
+             {token_put, {{token_eof}, demand_action_rule}},
+             {token_doif, {{token_eof}, demand_action_rule}},
+             {token_do_it_again, {{token_eof}, demand_action_rule}},
+             {token_do_it_again_until, {{token_eof}, demand_action_rule}},
+             {token_maybe_not, {{token_maybe_not, token_left_brace, token_non_s, token_right_brace}, maybe_not_rule}},
+             {token_not, {{token_eof}, demand_action_rule}},
+             {token_val, {{token_eof}, demand_action_rule}},
+             {token_id, {{token_eof}, demand_action_rule}},
+             {token_left_paren, {{token_eof}, demand_action_rule}},
+             {token_right_paren, {{token_eof}, demand_action_rule}},
+             {token_right_brace, {{token_eof}, demand_action_rule}},
+             {token_eof, {{token_eof}, demand_action_rule}}} // end 31st line content
+        },                                                   // end 31stth line pair
         {
             // begin 32nd line pair
             token_non_do_it_again,
@@ -958,7 +958,7 @@ std::unordered_map<token_class, std::unordered_map<token_class, std::pair<std::l
              {token_not, {{}, nullptr}},
              {token_val, {{}, nullptr}},
              {token_id, {{}, nullptr}},
-             {token_left_paren, {{token_left_paren, token_non_expr, token_right_paren, token_left_brace, token_non_s, token_right_brace}, nullptr}},
+             {token_left_paren, {{token_left_paren, token_non_expr, token_right_paren, token_left_brace, token_non_s, token_right_brace}, do_it_again_rule}},
              {token_right_paren, {{}, nullptr}},
              {token_right_brace, {{}, nullptr}},
              {token_eof, {{}, nullptr}}} // end 32nd line content

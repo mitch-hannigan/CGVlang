@@ -152,6 +152,11 @@ bool expr_set_operand_rule(semantic_struct &state, const std::vector<token> &tok
 }
 bool expr_set_operator_rule(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top)
 {
+    if (state.sub_expr.top().op.tclass != token_unknown) // error. (will happen when the code is ~id=expr)
+    {
+        state.error = "can't assign to a not.";
+        return false;
+    }
     state.sub_expr.top().op = tokens[token_index];
     return true;
 }
@@ -167,12 +172,12 @@ bool expr_move_up_rule(semantic_struct &state, const std::vector<token> &tokens,
     state.sub_expr.pop();
     if (state.sub_expr.size()) // let's propagate
     {
-        if (state.sub_expr.top().first.tclass == token_unknown && state.sub_expr.top().op.tclass == token_unknown) // we can safely propagate
-            state.sub_expr.top() = last_solver;
-        else // we can't propagate the normal way (this is normal, will happen when we are ready to solve an expr/finished to solve a subexpr)
-        {
-            state.sub_expr.top().second = last_solver.first;
-        }
+        expr_solver &solver = state.sub_expr.top();
+        if (solver.first.tclass == token_unknown) // we are in a sub_expr path, will merge eventually, or just resolve to val/id.
+            solver.first = last_solver.first;
+        else // merged, will resolve the expr on next move up.
+            solver.second = last_solver.first;
+        // we don't propagate operator up.
     }
     else // we will propagate the final result. (the expr is resolved, this will save it for code generation, but only till next expr is evaluated)
     {
@@ -202,10 +207,7 @@ bool get_rule(semantic_struct &state, const std::vector<token> &tokens, int toke
         {
             int scope = get_symbol_scope(state, tokens[temp_index]);
             if (scope == -1) // not found
-            {
-                state.error = tokens[temp_index].text + " is not available in the current scope.";
                 return false;
-            }
             else // generating code
             {
                 token_class type = state.symbol_table[scope][tokens[temp_index].text].type;

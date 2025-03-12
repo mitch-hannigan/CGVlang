@@ -2,14 +2,6 @@
 #include "semantic.h"
 #include "error_helper.h"
 #include "tac_helper.h"
-void write_future_code(semantic_struct &state)
-{
-    if (state.future_code.size()) // we can write code, not having code to write is an error, but a sintatic one, so we don't care.
-    {
-        state.code += state.future_code.top();
-        state.future_code.pop();
-    }
-}
 std::string get_temporary_name(semantic_struct &state)
 {
     return std::string("t") + std::to_string(state.temporary++);
@@ -60,6 +52,17 @@ void expr_solve_boolean(semantic_struct &state, const std::string &op_text)
         entry.type = solver.first.tclass;
         state.code += generate_declaration(entry) + std::string("= ") + generate_tac_cast_code(solver.first.tclass) + temp_name + " ";
     }
+    else if (solver.op.tclass & token_logic_operator) // logic ones, we have to cast.
+    {
+        state.code += temp_name + std::string(": bool = ");
+        state.code += "(bool ) ";
+        state.code += get_tac_text_form(solver.first);
+        state.code += op_text;
+        state.code += "(bool ) ";
+        state.code += get_tac_text_form(solver.second);
+        entry.type = get_highest_precision(solver.first.tclass, solver.second.tclass);
+        state.code += generate_declaration(entry) + std::string("= ") + generate_tac_cast_code(get_highest_precision(solver.first.tclass, solver.second.tclass)) + temp_name + " ";
+    }
     else // all remaining ones
     {
         state.code += temp_name + std::string(": bool = ");
@@ -86,7 +89,7 @@ void expr_solve_arithmetic(semantic_struct &state, const std::string &op_text)
     {
         entry.val = solver.first.text;
         entry.type = get_pure_type(solver.first.tclass);
-        state.code += generate_declaration(entry) + std::string("= ");
+        state.code += entry.val + " ";
         state.code += op_text;
         if (entry.type != get_pure_type(solver.second.tclass)) // cast necessário aqui
         {
@@ -140,8 +143,8 @@ bool add_symbol(semantic_struct &state, const std::vector<token> &tokens, int to
         state.error = std::string("symbol ") + tokens[token_index].text + " already exists in the current scope.";
         return false;
     }
+    state.current_entry.val = tokens[token_index].text;
     state.symbol_table[state.scope][tokens[token_index].text] = state.current_entry;
-    state.code += generate_declaration(state.current_entry);
     return true;
 }
 bool expr_set_operand_rule(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top)
@@ -201,7 +204,6 @@ bool end_scope(semantic_struct &state, const std::vector<token> &tokens, int tok
 {
     state.symbol_table.erase(state.scope);
     state.scope--;
-    write_future_code(state);
     return true;
 }
 bool get_rule(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top)

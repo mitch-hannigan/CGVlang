@@ -8,4 +8,4 @@
 std::string tokenClassToString(token_class tclass);
 std::string get_expected_tokens(const std::unordered_map<token_class, std::pair<std::list<token_class>, semantic_rule>> &line);
 token_class t_class_basic(token_class tok);
-std::string get_tac_type(token_class tok);
+token_class get_highest_precision(token_class tclass1, token_class tclass2);

@@ -113,11 +113,9 @@ token_class t_class_basic(token_class tok)
         return token_type;
     return tok;
 }
-std::string get_tac_type(token_class tok)
+token_class get_highest_precision(token_class tclass1, token_class tclass2)
 {
-    std::string final;
-    if((tok & token_type_byte) == token_type_byte) final=" u8 ";
-    else if((tok & token_type_int) == token_type_int) final=" i64 ";
-    else if((tok & token_type_real) == token_type_real) final=" f64 ";
-    return final;
+    return (tclass1 & token_type_byte) == token_type_byte ? tclass2 : (tclass2 & token_type_byte) == token_type_byte ? tclass1
+                                                                  : (tclass1 & token_type_int) == token_type_int     ? tclass2
+                                                                                                                     : tclass1;
 }

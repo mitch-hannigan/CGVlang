@@ -903,7 +903,7 @@ std::unordered_map<token_class, std::unordered_map<token_class, std::pair<std::l
              {token_not, {{}, nullptr}},
              {token_val, {{}, nullptr}},
              {token_id, {{}, nullptr}},
-             {token_left_paren, {{token_left_paren, token_non_expr, token_right_paren}, nullptr}},
+             {token_left_paren, {{token_left_paren, token_non_expr, token_right_paren}, put_rule}},
              {token_right_paren, {{}, nullptr}},
              {token_right_brace, {{}, nullptr}},
              {token_eof, {{}, nullptr}}} // end 29th line content

@@ -275,8 +275,8 @@ bool declare_tac_variable(semantic_struct &state, const std::vector<token> &toke
     state.code += generate_declaration(entry) + "= ";
     if (state.trigger == expr_evaluated_trigger)
     {
-        if(get_pure_type(entry.type) != get_pure_type(state.last_solved_expr.type))// cast needed
-        state.code += generate_tac_cast_code(entry.type);
+        if (get_pure_type(entry.type) != get_pure_type(state.last_solved_expr.type)) // cast needed
+            state.code += generate_tac_cast_code(entry.type);
         state.code += get_tac_text_form(token{state.last_solved_expr.type, state.last_solved_expr.val, 0, 0});
         if (get_highest_precision(get_pure_type(entry.type), get_pure_type(state.last_solved_expr.type)) != get_pure_type(entry.type)) // warning
             std::cout << "warning: Storing value in a narrower variable, this may cause problems. line " << data[0].line << " col " << data[0].col << std::endl;
@@ -288,5 +288,18 @@ bool declare_tac_variable(semantic_struct &state, const std::vector<token> &toke
             state.code += ".0";
         state.code += get_tac_type(entry.type);
     }
+    return true;
+}
+bool put_rule(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top)
+{
+    future_action action;
+    action.action = generat_tac_put;
+    state.future.push(action);
+    return true;
+}
+bool generat_tac_put(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top, std::vector<token> &data)
+{
+    state.code += "call write_" +
+                  get_tac_type(state.last_solved_expr.type) + std::string("(") + get_tac_text_form(make_token_from_entry(state.last_solved_expr)) + std::string(") ");
     return true;
 }

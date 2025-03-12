@@ -62,3 +62,5 @@ token_class get_pure_type(token_class tclass);
 bool activate_action(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top, future_action_trigers trigger);
 bool demand_action_rule(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top);
 bool declare_tac_variable(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top, std::vector<token> &data);
+bool generat_tac_put(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top, std::vector<token> &data);
+bool put_rule(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top);

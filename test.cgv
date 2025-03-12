@@ -1,2 +1,4 @@
 byte a = 1+2
 byte b=a
+put(b)
+put(10b)

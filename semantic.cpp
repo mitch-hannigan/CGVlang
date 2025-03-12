@@ -47,6 +47,83 @@ symbol_entry make_entry_from_token(semantic_struct &state, const token &tok)
     }
     return final;
 }
+void expr_solve_boolean(semantic_struct &state, const std::string &op_text)
+{
+    expr_solver &solver = state.sub_expr.top();
+    std::string temp_name = get_temporary_name(state);
+    std::string temp_name2 = get_temporary_name(state);
+    symbol_entry entry;
+    entry.val = temp_name2;
+    if (solver.op.tclass == token_not) // not is a special case.
+    {
+        state.code += temp_name + std::string(": bool = ") + op_text + std::string("(bool) ") + get_tac_text_form(solver.first);
+        entry.type = solver.first.tclass;
+        state.code += generate_declaration(entry) + std::string("= ") + generate_tac_cast_code(solver.first.tclass) + temp_name + " ";
+    }
+    else // all remaining ones
+    {
+        state.code += temp_name + std::string(": bool = ");
+        if (get_highest_precision(solver.first.tclass, solver.second.tclass) != solver.first.tclass) // cast necessário aqui
+            state.code += generate_tac_cast_code(solver.second.tclass);
+        state.code += get_tac_text_form(solver.first);
+        state.code += op_text;
+        if (get_highest_precision(solver.first.tclass, solver.second.tclass) != solver.second.tclass) // cast necessário aqui
+            state.code += generate_tac_cast_code(solver.first.tclass);
+        state.code += get_tac_text_form(solver.second);
+        entry.type = get_highest_precision(solver.first.tclass, solver.second.tclass);
+        state.code += generate_declaration(entry) + std::string("= ") + generate_tac_cast_code(get_highest_precision(solver.first.tclass, solver.second.tclass)) + temp_name + " ";
+    }
+    solver.first.text = temp_name2;
+    solver.first.tclass = entry.type;
+}
+void expr_solve_arithmetic(semantic_struct &state, const std::string &op_text)
+{
+    expr_solver &solver = state.sub_expr.top();
+    symbol_entry entry;
+    if (solver.op.tclass == token_assign) // atribution is a special case.
+    {
+        entry.val = solver.first.text;
+        entry.type = solver.first.tclass;
+        state.code += generate_declaration(entry) + std::string("= ");
+        state.code += op_text;
+        if (entry.type != solver.second.tclass) // cast necessário aqui
+        {
+            state.code += generate_tac_cast_code(solver.first.tclass);
+            if (get_highest_precision(solver.first.tclass, solver.second.tclass) != solver.first.tclass) // narrower mode warning
+                std::cout << "warning: you are assigning a variable to a narrower one, this may cause problems. line " << solver.op.line << " col " << solver.op.col << "\n";
+        }
+        state.code += get_tac_text_form(solver.second);
+    }
+    else // all remaining ones
+    {
+        entry.val = get_temporary_name(state);
+        entry.type = get_highest_precision(solver.first.tclass, solver.second.tclass);
+        state.code += generate_declaration(entry) + std::string("= ");
+        if (entry.type != solver.first.tclass) // cast necessário aqui
+            state.code += generate_tac_cast_code(solver.second.tclass);
+        state.code += get_tac_text_form(solver.first);
+        state.code += op_text;
+        if (entry.type != solver.second.tclass) // cast necessário aqui
+            state.code += generate_tac_cast_code(solver.first.tclass);
+        state.code += get_tac_text_form(solver.second);
+    }
+    solver.first.text = entry.val;
+    solver.first.tclass = entry.type;
+}
+void expr_solve(semantic_struct &state)
+{
+    expr_solver &solver = state.sub_expr.top();
+    if ((solver.op.tclass & token_comparison_operator) || (solver.op.tclass & token_logic_operator)) // is boolean
+    {
+        if (solver.first.tclass != token_unknown && (solver.second.tclass != token_unknown || solver.op.tclass == token_not))
+            expr_solve_boolean(state, get_tac_operator(solver.op.tclass));
+    }
+    else if ((solver.op.tclass & token_arithmetic_operator) == token_arithmetic_operator) // is arithmetic
+    {
+        if (solver.first.tclass != token_unknown && solver.second.tclass != token_unknown)
+            expr_solve_arithmetic(state, get_tac_operator(solver.op.tclass));
+    }
+}
 bool set_type(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top)
 {
     state.current_entry.type = tokens[token_index].tclass;
@@ -60,97 +137,47 @@ bool add_symbol(semantic_struct &state, const std::vector<token> &tokens, int to
         return false;
     }
     state.symbol_table[state.scope][tokens[token_index].text] = state.current_entry;
-    state.code += tokens[token_index].text + std::string(":") + get_tac_type(state.current_entry.type);
+    state.code += generate_declaration(state.current_entry);
     return true;
-}
-void expr_add_operand(semantic_struct &state, const token &operand)
-{
-    if (state.solver.first.tclass == token_unknown)
-    {
-        state.solver.first = operand;
-    }
-    else if (state.solver.second.tclass == token_unknown)
-    {
-        state.solver.second = operand;
-    }
 }
 bool expr_set_operand_rule(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top)
 {
     token tok = tokens[token_index];
     auto operand = make_entry_from_token(state, tok);
-    if (operand.type == token_unknown) // error
+    if (operand.type == token_unknown) // error, will happen if symbol is not found in the table.
         return false;
     tok.tclass = operand.type;
-    expr_add_operand(state, tok);
+    state.sub_expr.top().first = tok; // this is a leaf, allways left operand.
     return true;
 }
 bool expr_set_operator_rule(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top)
 {
-    if (state.solver.op.tclass == token_unknown) // we don't know the operator yet
-        state.solver.op = tokens[token_index];
-    else // we already have an operator, going down in the stack.
-    {
-        state.sub_expr.push(state.solver);
-        // reset the expr solver.
-        state.solver.first.tclass = token_unknown;
-        state.solver.second.tclass = token_unknown;
-        state.solver.op.tclass = token_unknown;
-    }
+    state.sub_expr.top().op = tokens[token_index];
     return true;
 }
-void expr_solve_logic(semantic_struct &state, const std::string &op_text)
+bool expr_move_down_rule(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top)
 {
-    expr_solver &solver = state.solver;
-    std::string temp_name = get_temporary_name(state);
-    std::string temp_name2 = get_temporary_name(state);
-    if (solver.op.tclass == token_not) // not is a special case.
-    {
-        state.code += temp_name + std::string(": bool = (bool) ") + get_tac_text_form(solver.first) + op_text;
-        state.code += temp_name2 + std::string(": ") + get_tac_type(solver.first.tclass) + std::string("= ") + generate_tac_cast_code(solver.first.tclass) + temp_name + " ";
-    }
-    else // && or ||
-    {
-    }
-    solver.first.text = temp_name2;
+    state.sub_expr.push(expr_solver()); // by default the solver is started with unknown, that's what we want, we are going down in the tree, so empty nodes for now, will propagate up.
+    return true;
 }
-bool expr_done_rule(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top)
+bool expr_move_up_rule(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top)
 {
-    symbol_entry &last_expr = state.last_solved_expr; // where's the last solved expr?
-    expr_solver *solver_ptr = &(state.solver);
-    while (solver_ptr->first.tclass != token_unknown) // will be false when fully reset
+    expr_solve(state);                              // try to solve
+    expr_solver last_solver = state.sub_expr.top(); // this is the current node, let's propagate it.
+    state.sub_expr.pop();
+    if (state.sub_expr.size()) // let's propagate
     {
-        expr_solver &solver = *solver_ptr;
-        std::string op_text = get_tac_operator(solver.op.tclass); // the operator instruction in tac form
-        if (solver.op.tclass == token_unknown)                    // solve to value or id (no op)
+        if (state.sub_expr.top().first.tclass == token_unknown && state.sub_expr.top().op.tclass == token_unknown) // we can safely propagate
+            state.sub_expr.top() = last_solver;
+        else // we can't propagate the normal way (this is normal, will happen when we are ready to solve an expr/finished to solve a subexpr)
         {
+            state.sub_expr.top().second = last_solver.first;
         }
-        else if (solver.op.tclass == token_assign) // solve the = operator
-        {
-            state.code += solver.first.text + std::string(" ") + op_text + std::string(" ");
-            if (solver.first.tclass != solver.second.tclass) // cast needed
-            {
-                if (get_highest_precision(solver.first.tclass, solver.second.tclass) != solver.first.tclass) // warning
-                    std::cout << "warning: trying to assign to a narrower variable (expect loss of precision), on line " << solver.op.line << " col " << solver.op.col << std::endl;
-                state.code += generate_tac_cast_code(solver.first.tclass);
-            }
-            state.code += solver.second.text + std::string(" ");
-        }
-        else if (solver.op.tclass == token_not || solver.op.tclass == token_or || solver.op.tclass == token_and) // solve logic operators
-            expr_solve_logic(state, op_text);
-        last_expr = make_entry_from_token(state, solver.first);
-        if (state.sub_expr.size()) // we have stuff to process
-        {
-            *solver_ptr = state.sub_expr.top();
-            state.sub_expr.pop();
-        }
-        else
-        {
-            // reset the expr solver.
-            state.solver.first.tclass = token_unknown;
-            state.solver.second.tclass = token_unknown;
-            state.solver.op.tclass = token_unknown;
-            state.temporary = 1;
-        }
+    }
+    else // we will propagate the final result. (the expr is resolved, this will save it for code generation, but only till next expr is evaluated)
+    {
+        state.last_solved_expr = symbol_entry{last_solver.first.tclass, last_solver.first.text}; // we do it like this because we are not allowed to search in the table for the symbol. (if it's an id we already checked for it, and for temporary ones, no need to check, the compiler will alocate them)
+        state.temporary = 1;                                                                     // temps will be regenerated for next expr.
     }
     return true;
 }

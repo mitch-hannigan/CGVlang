@@ -275,11 +275,18 @@ bool declare_tac_variable(semantic_struct &state, const std::vector<token> &toke
     state.code += generate_declaration(entry) + "= ";
     if (state.trigger == expr_evaluated_trigger)
     {
-        state.code += generate_tac_cast_code(entry.type) + get_tac_text_form(token{state.last_solved_expr.type, state.last_solved_expr.val, 0, 0});
+        if(get_pure_type(entry.type) != get_pure_type(state.last_solved_expr.type))// cast needed
+        state.code += generate_tac_cast_code(entry.type);
+        state.code += get_tac_text_form(token{state.last_solved_expr.type, state.last_solved_expr.val, 0, 0});
         if (get_highest_precision(get_pure_type(entry.type), get_pure_type(state.last_solved_expr.type)) != get_pure_type(entry.type)) // warning
             std::cout << "warning: Storing value in a narrower variable, this may cause problems. line " << data[0].line << " col " << data[0].col << std::endl;
     }
     else
-        state.code += get_tac_text_form(token{token_class(entry.type & token_val), std::string("0"), 0, 0});
+    {
+        state.code += "0";
+        if ((entry.type & token_type_real) == token_type_real)
+            state.code += ".0";
+        state.code += get_tac_type(entry.type);
+    }
     return true;
 }

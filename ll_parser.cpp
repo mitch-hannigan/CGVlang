@@ -857,20 +857,20 @@ std::unordered_map<token_class, std::unordered_map<token_class, std::pair<std::l
             // begin 27th line pair
             token_non_typedecl_attrib,
             {// begin 27th line content
-             {token_type, {{token_eof}, nullptr}},
-             {token_get, {{token_eof}, nullptr}},
-             {token_put, {{token_eof}, nullptr}},
-             {token_doif, {{token_eof}, nullptr}},
-             {token_do_it_again, {{token_eof}, nullptr}},
-             {token_do_it_again_until, {{token_eof}, nullptr}},
-             {token_not, {{token_eof}, nullptr}},
-             {token_val, {{token_eof}, nullptr}},
-             {token_id, {{token_eof}, nullptr}},
-             {token_left_paren, {{token_eof}, nullptr}},
+             {token_type, {{token_eof}, demand_action_rule}},
+             {token_get, {{token_eof}, demand_action_rule}},
+             {token_put, {{token_eof}, demand_action_rule}},
+             {token_doif, {{token_eof}, demand_action_rule}},
+             {token_do_it_again, {{token_eof}, demand_action_rule}},
+             {token_do_it_again_until, {{token_eof}, demand_action_rule}},
+             {token_not, {{token_eof}, demand_action_rule}},
+             {token_val, {{token_eof}, demand_action_rule}},
+             {token_id, {{token_eof}, demand_action_rule}},
+             {token_left_paren, {{token_eof}, demand_action_rule}},
              {token_right_paren, {{}, nullptr}},
              {token_assign, {{token_assign, token_non_expr}, nullptr}},
-             {token_right_brace, {{token_eof}, nullptr}},
-             {token_eof, {{token_eof}, nullptr}}} // end 27th line content
+             {token_right_brace, {{token_eof}, demand_action_rule}},
+             {token_eof, {{token_eof}, demand_action_rule}}} // end 27th line content
         },                                        // end 27th line pair
         {
             // begin 28th line pair

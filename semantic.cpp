@@ -145,6 +145,10 @@ bool add_symbol(semantic_struct &state, const std::vector<token> &tokens, int to
     }
     state.current_entry.val = tokens[token_index].text;
     state.symbol_table[state.scope][tokens[token_index].text] = state.current_entry;
+    auto tok = make_token_from_entry(state.current_entry);
+    tok.line = tokens[token_index].line;
+    tok.col = tokens[token_index].col;
+    state.future.push(future_action{{tok}, declare_tac_variable});
     return true;
 }
 bool expr_set_operand_rule(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top)
@@ -192,6 +196,7 @@ bool expr_move_up_rule(semantic_struct &state, const std::vector<token> &tokens,
     {
         state.last_solved_expr = symbol_entry{last_solver.first.tclass, last_solver.first.text}; // we do it like this because we are not allowed to search in the table for the symbol. (if it's an id we already checked for it, and for temporary ones, no need to check, the compiler will alocate them)
         state.temporary = 1;                                                                     // temps will be regenerated for next expr.
+        return activate_action(state, tokens, token_index, stack_top, expr_evaluated_trigger);
     }
     return true;
 }
@@ -202,9 +207,13 @@ bool begin_scope(semantic_struct &state, const std::vector<token> &tokens, int t
 }
 bool end_scope(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top)
 {
-    state.symbol_table.erase(state.scope);
-    state.scope--;
-    return true;
+    if (activate_action(state, tokens, token_index, stack_top, end_of_scope_trigger)) // action run ok.
+    {
+        state.symbol_table.erase(state.scope);
+        state.scope--;
+        return true;
+    }
+    return false;
 }
 bool get_rule(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top)
 {
@@ -231,4 +240,46 @@ bool get_rule(semantic_struct &state, const std::vector<token> &tokens, int toke
 token_class get_pure_type(token_class tclass)
 {
     return token_class(tclass & token_type_any);
+}
+bool activate_action(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top, future_action_trigers trigger)
+{
+    state.trigger = trigger;
+    if (state.future.size()) // we have actions to run
+    {
+        future_action action = state.future.top();
+        state.future.pop();
+        if (!action.action) // code writer
+            for (auto &tok : action.data)
+                state.code += tok.text + " ";
+        else // action is a function
+        {
+            return action.action(state, tokens, token_index, stack_top, action.data);
+        }
+    }
+    return true;
+}
+bool demand_action_rule(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top)
+{
+    return activate_action(state, tokens, token_index, stack_top, on_demand_trigger);
+}
+token make_token_from_entry(const symbol_entry &entry)
+{
+    token final;
+    final.text = entry.val;
+    final.tclass = entry.type;
+    return final;
+}
+bool declare_tac_variable(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top, std::vector<token> &data)
+{
+    auto entry = make_entry_from_token(state, data[0]); // this should work fine, and it'll never faill, in theory.
+    state.code += generate_declaration(entry) + "= ";
+    if (state.trigger == expr_evaluated_trigger)
+    {
+        state.code += generate_tac_cast_code(entry.type) + get_tac_text_form(token{state.last_solved_expr.type, state.last_solved_expr.val, 0, 0});
+        if (get_highest_precision(get_pure_type(entry.type), get_pure_type(state.last_solved_expr.type)) != get_pure_type(entry.type)) // warning
+            std::cout << "warning: Storing value in a narrower variable, this may cause problems. line " << data[0].line << " col " << data[0].col << std::endl;
+    }
+    else
+        state.code += get_tac_text_form(token{token_class(entry.type & token_val), std::string("0"), 0, 0});
+    return true;
 }

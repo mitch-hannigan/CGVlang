@@ -43,8 +43,7 @@ enum token_class
     token_type_byte = token_type | 0x80000000,
     token_type_int = token_type | 0x40000000,
     token_type_real = token_type | 0x20000000,
-    token_any_type = token_type_real | token_type_int | token_type_byte,
-    ,
+    token_type_any = token_type_real | token_type_int | token_type_byte,
     token_val_byte = token_type_byte | token_val,
     token_val_char = token_val_byte | 0x10000000, // 0x80000000to0x20000000 is already in use in this case.
     token_val_int = token_type_int | token_val,
@@ -88,6 +87,6 @@ enum token_class
 typedef struct
 {
     token_class tclass = token_unknown;
-    std::string text;
-    unsigned long long line, col;
+    std::string text = "";
+    unsigned long long line = 0, col = 0;
 } token;

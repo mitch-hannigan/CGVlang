@@ -1,7 +1,7 @@
 #include "tac_helper.h"
 std::string get_tac_text_form(const token &tok)
 {
-    if (tok.tclass == token_id)
+    if (!(tok.tclass & token_val))
         return tok.text + " ";
     return tok.text + get_tac_type(tok.tclass);
 }

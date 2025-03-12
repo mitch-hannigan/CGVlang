@@ -43,3 +43,4 @@ bool expr_move_up_rule(semantic_struct &state, const std::vector<token> &tokens,
 bool begin_scope(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top);
 bool end_scope(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top);
 bool get_rule(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top);
+token_class get_pure_type(token_class  tclass);

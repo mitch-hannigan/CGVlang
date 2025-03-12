@@ -75,6 +75,8 @@ void expr_solve_boolean(semantic_struct &state, const std::string &op_text)
     }
     solver.first.text = temp_name2;
     solver.first.tclass = entry.type;
+    solver.op.tclass = token_unknown;
+    solver.second.tclass = token_unknown;
 }
 void expr_solve_arithmetic(semantic_struct &state, const std::string &op_text)
 {
@@ -83,10 +85,10 @@ void expr_solve_arithmetic(semantic_struct &state, const std::string &op_text)
     if (solver.op.tclass == token_assign) // atribution is a special case.
     {
         entry.val = solver.first.text;
-        entry.type = solver.first.tclass;
+        entry.type = get_pure_type(solver.first.tclass);
         state.code += generate_declaration(entry) + std::string("= ");
         state.code += op_text;
-        if (entry.type != solver.second.tclass) // cast necessário aqui
+        if (entry.type != get_pure_type(solver.second.tclass)) // cast necessário aqui
         {
             state.code += generate_tac_cast_code(solver.first.tclass);
             if (get_highest_precision(solver.first.tclass, solver.second.tclass) != solver.first.tclass) // narrower mode warning
@@ -97,18 +99,20 @@ void expr_solve_arithmetic(semantic_struct &state, const std::string &op_text)
     else // all remaining ones
     {
         entry.val = get_temporary_name(state);
-        entry.type = get_highest_precision(solver.first.tclass, solver.second.tclass);
+        entry.type = get_pure_type(get_highest_precision(solver.first.tclass, solver.second.tclass));
         state.code += generate_declaration(entry) + std::string("= ");
-        if (entry.type != solver.first.tclass) // cast necessário aqui
+        if (entry.type != get_pure_type(solver.first.tclass)) // cast necessário aqui
             state.code += generate_tac_cast_code(solver.second.tclass);
         state.code += get_tac_text_form(solver.first);
         state.code += op_text;
-        if (entry.type != solver.second.tclass) // cast necessário aqui
+        if (entry.type != get_pure_type(solver.second.tclass)) // cast necessário aqui
             state.code += generate_tac_cast_code(solver.first.tclass);
         state.code += get_tac_text_form(solver.second);
     }
     solver.first.text = entry.val;
     solver.first.tclass = entry.type;
+    solver.op.tclass = token_unknown;
+    solver.second.tclass = token_unknown;
 }
 void expr_solve(semantic_struct &state)
 {
@@ -152,9 +156,11 @@ bool expr_set_operand_rule(semantic_struct &state, const std::vector<token> &tok
 }
 bool expr_set_operator_rule(semantic_struct &state, const std::vector<token> &tokens, int token_index, const token_class &stack_top)
 {
-    if (state.sub_expr.top().op.tclass != token_unknown) // error. (will happen when the code is ~id=expr)
+    if (state.sub_expr.top().second.tclass != token_unknown) // this node has more than two children, pre resolving it to get back to 1.
+        expr_solve(state);                                   // try to solve
+    if (state.sub_expr.top().op.tclass != token_unknown)     // error: ~id=expr
     {
-        state.error = "can't assign to a not.";
+        state.error = "operator is set to: " + state.sub_expr.top().op.text;
         return false;
     }
     state.sub_expr.top().op = tokens[token_index];
@@ -175,7 +181,7 @@ bool expr_move_up_rule(semantic_struct &state, const std::vector<token> &tokens,
         expr_solver &solver = state.sub_expr.top();
         if (solver.first.tclass == token_unknown) // we are in a sub_expr path, will merge eventually, or just resolve to val/id.
             solver.first = last_solver.first;
-        else // merged, will resolve the expr on next move up.
+        else // merged
             solver.second = last_solver.first;
         // we don't propagate operator up.
     }
@@ -219,4 +225,8 @@ bool get_rule(semantic_struct &state, const std::vector<token> &tokens, int toke
         }
     }
     return true;
+}
+token_class get_pure_type(token_class tclass)
+{
+    return token_class(tclass & token_type_any);
 }

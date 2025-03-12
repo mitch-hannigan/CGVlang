@@ -13,12 +13,13 @@ void compile(std::string &source)
         return;
     }
     auto str = ll_parse(tokens, continue_process);
+    std::cout << str << '\n';
     if (!continue_process)
     {
         std::cout << "you have a sintatic or semantic error, bad times.";
         return;
     }
-    std::cout << str << "\ngood times, ll parsing successfull";
+    std::cout << "good times, ll parsing successfull";
 }
 int main(int argc, char *argv[])
 {

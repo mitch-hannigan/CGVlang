@@ -49,7 +49,7 @@ void expr_solve_boolean(semantic_struct &state, const std::string &op_text)
     if (solver.op.tclass == token_not) // not is a special case.
     {
         state.code += temp_name + std::string(": bool = ") + op_text + std::string("(bool) ") + get_tac_text_form(solver.first);
-        entry.type = solver.first.tclass;
+        entry.type = get_pure_type(solver.first.tclass);
         state.code += generate_declaration(entry) + std::string("= ") + generate_tac_cast_code(solver.first.tclass) + temp_name + " ";
     }
     else if (solver.op.tclass & token_logic_operator) // logic ones, we have to cast.
